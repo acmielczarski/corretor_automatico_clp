@@ -1,0 +1,18 @@
+# Ambientes
+.venv/
+venv/
+
+# Caches e ferramentas
+.ruff_cache/
+.vscode/
+
+# Compilação e distribuição (PyInstaller)
+build/
+dist/
+*.spec
+__pycache__/
+*.pyc
+
+# Não utilizados até o o momento, retirar quando implementar
+db/
+config/
