@@ -4,7 +4,7 @@ Uma ferramenta de automação e interface gráfica (GUI) desenvolvida em Python 
 Este software foi desenvolvida utilizando `Codesys` comunicando com o software de simulação `Factory I/O`, visando a correção automática de tarefas de estudantes do Curso Técnico em Automação Industrial. Simulações no `Factory I/O` que utilizam um escopo de funcionamento bem estruturada em passos, podem ser facilmente avaliadas automaticamente com este código.  
 Embora este software tenha sido desenvolvido e testado no ambiente `Codesys`, qualquer CLP que possua comunicação OPC UA ou Modbus TCP ajustando os valores de configuração dos passos e mapeamento de endereços.
 
-Me mande um [e-mail](mailto:andrew.mielczarki@senairs.org.br) caso queira contrinuir ou dar sugestões.  
+Me mande um [e-mail](mailto:andrew.mielczarki@senairs.org.br) caso queira contribuir ou dar sugestões.  
 Andrew Mielczarski:
 <andrew.mielczarski@senairs.org.br>
 
