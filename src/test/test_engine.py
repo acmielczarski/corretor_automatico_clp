@@ -45,7 +45,11 @@ class TestEngine:
             
             for tag_padrao, values in self.roteiro.dicionario_opc.items():
                 sinonimos = values.get('alias')
-                if any(sinonimo in nome_clp_lower for sinonimo in sinonimos):
+
+                match_direto = tag_padrao.lower() in nome_clp_lower
+                match_sinonimo = any(sinonimo.lower() in nome_clp_lower for sinonimo in sinonimos)
+
+                if match_direto or match_sinonimo:
                     if tag_padrao not in self.tags_mapeadas:
                         self.tags_mapeadas[tag_padrao] = no_objeto
                         break
@@ -218,7 +222,7 @@ class TestEngine:
             if self.clp._protocol == Protocol.OPC_UA:
                 pass
             elif self.clp._protocol == Protocol.MODBUS_TCP:
-                val = int(val*10)
+                val = int(val)
 
         # Executa o teste
         no = self.tags_mapeadas[tag]

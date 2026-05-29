@@ -222,6 +222,7 @@ class AvaliadorCLPGUI(QMainWindow):
                 QMessageBox.critical(self, "Erro", f"Falha ao processar JSON:\n{e}")
 
     def descrever_teste(self):
+        self.txt_log.clear()
         self.roteiro_atual.log = self.log
         self.roteiro_atual.describe()
 
@@ -263,7 +264,7 @@ class AvaliadorCLPGUI(QMainWindow):
 
         try:
             await self.clp.connect()
-            self.log("✅ Conexão estabelecida com sucesso.")
+            self.log(f"✅ Conexão estabelecida com sucesso no endereço {self.clp.url}:{self.clp.port}.")
             
             if "OPC UA" in protocolo:
                 await self.clp.escanear_variaveis_disponiveis(gvl_name="FactoryIO")
