@@ -1,9 +1,14 @@
 # 🏭 Avaliador Automático de CLP
 
-Uma ferramenta de automação e interface gráfica (GUI) desenvolvida em Python para avaliar, testar e validar a lógica de Controladores Lógicos Programáveis (CLPs). Projetado com foco em ambientes educacionais e de laboratório, o software permite a criação de roteiros de testes dinâmicos sem necessidade de programação por parte do usuário final.
-Este software foi desenvolvida utilizando Codesys comunicando com o software de simulação Factory I/O, visando a correção automática de tarefas de estudantes do Curso Técnico em Automação Industrial. Simulações no Factory I/O que utilizam um escopo de funcionamento bem estruturada em passos, podem ser facilmente avaliadas automaticamente com este código.
-Embora este software tenha sido desenvolvido e testado no ambiente Codesys, qualquer CLP que possua comunicação OPC UA ou Modbus TCP ajustando os valores de configuração dos passos e mapeamento de endereços.
-*INFO: também foram realizados testes utilizando o CLP da família M221 (M221CE40T) da `Schneider Eletric` utilizando comunicação Modbus TCP*
+Uma ferramenta de automação e interface gráfica (GUI) desenvolvida em Python para avaliar, testar e validar a lógica de Controladores Lógicos Programáveis (CLPs). Projetado com foco em ambientes educacionais e de laboratório, o software permite a criação de roteiros de testes dinâmicos sem necessidade de programação por parte do usuário final.  
+Este software foi desenvolvida utilizando `Codesys` comunicando com o software de simulação `Factory I/O`, visando a correção automática de tarefas de estudantes do Curso Técnico em Automação Industrial. Simulações no `Factory I/O` que utilizam um escopo de funcionamento bem estruturada em passos, podem ser facilmente avaliadas automaticamente com este código.  
+Embora este software tenha sido desenvolvido e testado no ambiente `Codesys`, qualquer CLP que possua comunicação OPC UA ou Modbus TCP ajustando os valores de configuração dos passos e mapeamento de endereços.
+
+Me mande um [e-mail](mailto:andrew.mielczarki@senairs.org.br) caso queira contrinuir ou dar sugestões.  
+Andrew Mielczarski:
+<andrew.mielczarski@senairs.org.br>
+
+* **INFO:** também foram realizados testes utilizando o CLP da família M221 (M221CE40T) da `Schneider Eletric` utilizando comunicação Modbus TCP*
 
 ## ✨ Principais Funcionalidades
 
