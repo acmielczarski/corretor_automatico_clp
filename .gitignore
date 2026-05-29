@@ -13,6 +13,6 @@ dist/
 __pycache__/
 *.pyc
 
-# Não utilizados até o o momento, retirar quando implementar
+# Não utilizados até o momento, retirar quando implementar
 db/
 config/

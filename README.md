@@ -27,14 +27,60 @@ O projeto segue um padrão modular organizado:
 
 ```text
 CORRETOR_AUTOMATICO_CLP/
-├── db/                   # Roteiros padrão e banco de dados JSON salvos
-├── src/                  # Código-fonte principal
-│   ├── clp/              # Módulos de comunicação (OpcClpClient, ModbusClpClient, Protocolos)
-│   ├── gui/              # Interface gráfica e componentes (PySide6)
-│   │   ├── components/   # Tabs, Cards isolados e Widgets customizados
-│   │   ├── custom_widgets# Componentes Qt sobrescritos (ex: NoScrollComboBox)
-│   │   └── main_window.py# Janela e orquestrador principal
-│   └── test/             # Classes de domínio (TestEngine, TestScript, TestStep, Actions)
-├── main.py               # Ponto de entrada do aplicativo (Entrypoint)
-├── pyproject.toml        # Configurações de dependências
-└── README.md             # Documentação do projeto
+├── db/                    # Roteiros JSON padrão
+├── src/                   # Código-fonte principal
+│   ├── clp/               # Módulos de comunicação (OpcClpClient, ModbusClpClient, Protocolos)
+│   ├── gui/               # Interface gráfica e componentes (PySide6)
+│   │   ├── components/    # Tabs, Cards isolados e Widgets customizados
+│   │   ├── custom_widgets # Componentes Qt sobrescritos (ex: NoScrollComboBox)
+│   │   └── main_window.py # Janela e orquestrador principal
+│   └── test/              # Classes de domínio (TestEngine, TestScript, TestStep, Actions)
+├── main.py                # Ponto de entrada do aplicativo (Entrypoint)
+├── pyproject.toml         # Configurações de dependências
+└── README.md              # Documentação do projeto
+```
+
+## 🚀 Instalação e Uso Local
+Pré-requisitos
+  * Python 3.12 ou superior instalado na máquina.
+  * Gerenciador de pacotes `pip`.
+
+### Passos de Instalação
+  1. Clone o repositório:
+
+```powershell
+  git clone https://github.com/acmielczarski/corretor_automatico_clp.git
+  cd corretor_automatico_clp
+```
+
+  2. Crie e ative um ambiente virtual (Recomendado):
+
+```powershell
+  python -m venv .venv
+  # No Windows:
+  .venv\Scripts\activate
+  # No Linux/Mac:
+  source .venv/bin/activate
+```
+  3. Instale as dependências:
+
+```powershell
+  python -m uv sync --no-dev
+ ```
+
+  4. Execute a aplicação:
+
+```powershell
+  python main.py
+```
+## 🧠 Como Funciona o Fluxo de Teste
+* **Conexão:** Na tela principal, o usuário define o IP e a porta (ex: 4840 para OPC ou 502 para Modbus) e escolhe o protocolo.
+
+* **Configuração OPC/Modbus:** Através do botão "Configurar Roteiro", o usuário cadastra as Tags do CLP na aba correspondente, definindo seus tipos e sinônimos lógicos.
+
+* **Criação do Roteiro:** Na aba de "Passos de Teste", o usuário adiciona os cartões de ação. O software possui Proteção UX (Fallbacks) que impede a seleção de comandos incompatíveis com o tipo da variável (ex: aplicar COMPARISON em variável booleana).
+
+* **Execução e Avaliação:** O JSON do roteiro é injetado no TestEngine, que se comunica com o equipamento físico/simulado e retorna o diagnóstico (Pass/Fail) no painel de Logs.
+
+## 📄 Licença
+Este projeto é para uso educacional/privado, sob licença GNU General Public License v3.0.
