@@ -8,7 +8,7 @@ Me mande um [e-mail](mailto:andrew.mielczarki@senairs.org.br) caso queira contri
 Andrew Mielczarski:
 <andrew.mielczarski@senairs.org.br>
 
-* **INFO:** também foram realizados testes utilizando o CLP da família M221 (M221CE40T) da `Schneider Eletric` utilizando comunicação Modbus TCP*
+***INFO:** também foram realizados testes utilizando o CLP da família M221 (M221CE40T) da `Schneider Eletric` utilizando comunicação Modbus TCP*
 
 ## ✨ Principais Funcionalidades
 
