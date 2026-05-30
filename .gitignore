@@ -18,3 +18,4 @@ __pycache__/
 # Não utilizados até o momento, retirar quando implementar
 db/
 config/
+

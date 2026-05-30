@@ -1,0 +1,72 @@
+name: 🐛 Relatar um Bug
+description: Encontrou um erro no Avaliador de CLP? Reporte aqui para investigarmos.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por dedicar seu tempo para reportar este erro! Por favor, preencha o máximo de detalhes possível para podermos reproduzir o problema.
+
+  - type: dropdown
+    id: protocolo
+    attributes:
+      label: Qual protocolo estava sendo utilizado?
+      options:
+        - OPC UA
+        - Modbus TCP
+        - Não se aplica (Erro na Interface)
+    validations:
+      required: true
+
+  - type: textarea
+    id: descricao
+    attributes:
+      label: Descrição do Problema
+      description: O que aconteceu de errado? Seja claro e conciso.
+      placeholder: Ao tentar rodar o roteiro X, o sistema retornou o erro Y...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproducao
+    attributes:
+      label: Passos para Reproduzir
+      description: Como podemos reproduzir esse erro na nossa máquina?
+      placeholder: |
+        1. Iniciei o software
+        2. Carreguei o roteiro 'roteiro_nivel.json'
+        3. Cliquei no botão 'INICIAR PROCESSO DE AVALIAÇÃO'
+        4. Vi o erro...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs do Console
+      description: Copie e cole os logs exibidos na tela principal (ou anexe o arquivo .txt).
+      render: text
+    validations:
+      required: false
+
+  - type: input
+    id: ambiente
+    attributes:
+      label: Ambiente de Execução
+      description: Qual o seu Sistema Operacional e versão do Python?
+      placeholder: ex. Windows 11, Python 3.10
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: termos
+    attributes:
+      label: Verificações Finais
+      options:
+        - label: Li o README e confirmo que estou usando as dependências corretas.
+          required: true
+        - label: Pesquisei nas Issues abertas e não encontrei este mesmo erro relatado.
+          required: true

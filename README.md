@@ -4,17 +4,21 @@ Uma ferramenta de automação e interface gráfica (GUI) desenvolvida em Python 
 Este software foi desenvolvida utilizando `Codesys` comunicando com o software de simulação `Factory I/O`, visando a correção automática de tarefas de estudantes do Curso Técnico em Automação Industrial. Simulações no `Factory I/O` que utilizam um escopo de funcionamento bem estruturada em passos, podem ser facilmente avaliadas automaticamente com este código.  
 Embora este software tenha sido desenvolvido e testado no ambiente `Codesys`, qualquer CLP que possua comunicação OPC UA ou Modbus TCP ajustando os valores de configuração dos passos e mapeamento de endereços.
 
-Me mande um [e-mail](mailto:andrew.mielczarki@senairs.org.br) caso queira contribuir ou dar sugestões.  
-Andrew Mielczarski:
-<andrew.mielczarski@senairs.org.br>
+***INFO:** também foram realizados testes utilizando o CLP da família M221 (M221CE40T) da `Schneider Eletric` utilizando comunicação Modbus TCP, mas os valores e as operações Modbus devem ser ajustados de acordo.*
 
-***INFO:** também foram realizados testes utilizando o CLP da família M221 (M221CE40T) da `Schneider Eletric` utilizando comunicação Modbus TCP*
+Mande um [e-mail](mailto:andrew.mielczarki@senairs.org.br) caso queira contribuir ou dar sugestões.  
+> *Andrew Mielczarski: <andrew.mielczarski@senairs.org.br>*
+
+
+
+> ### Importante!
+> Como os valores que o *Factory I/O* utiliza para os protocolos `OPC UA` e `Modbus TCP` são diferentes, os valores de comparação dentro dos passos devem ser ajustados de acordo.
 
 ## ✨ Principais Funcionalidades
 
 * **Comunicação Multi-Protocolo:** Suporte nativo para conexão com CLPs via **OPC UA** e **Modbus TCP**.
 * **Motor de Testes Assíncrono:** Execução fluida de roteiros de validação utilizando `qasync`, garantindo que a interface permaneça responsiva durante a comunicação industrial.
-* **Criação Visual de Roteiros:** Interface baseada em "Cartões de Passo" dinâmicos (Model-View-Controller) para montagem de sequências lógicas.
+* **Criação Visual de Roteiros:** Interface baseada em "Cartões de Passo" dinâmicos para montagem de sequências lógicas.
 * **Ações de Teste Industriais:** Suporte a comandos robustos como `WRITE`, `READ_EQUAL`, `COMPARISON` (>, <, ==, !=), `PRESS_PUSH_BUTTON` (pulsos simulados), `WAIT_CHANGE` e `SLEEP`.
 * **Dicionário e Mapeamento OPC:** Tabela de configuração (CRUD) inteligente para mapear Tags lógicas, endereços físicos e sinônimos, com tratativas específicas para variáveis discretas (BOOL) e analógicas (INT/FLOAT).
 * **Geração de Relatórios:** Log de execução detalhado em tempo real com zoom acessível, exportável para `.txt` com cabeçalho de *timestamp* automático.
@@ -35,17 +39,18 @@ O projeto segue um padrão modular organizado:
 
 ```text
 CORRETOR_AUTOMATICO_CLP/
-├── db/                    # Roteiros JSON padrão
-├── src/                   # Código-fonte principal
-│   ├── clp/               # Módulos de comunicação (OpcClpClient, ModbusClpClient, Protocolos)
-│   ├── gui/               # Interface gráfica e componentes (PySide6)
-│   │   ├── components/    # Tabs, Cards isolados e Widgets customizados
-│   │   ├── custom_widgets # Componentes Qt sobrescritos (ex: NoScrollComboBox)
-│   │   └── main_window.py # Janela e orquestrador principal
-│   └── test/              # Classes de domínio (TestEngine, TestScript, TestStep, Actions)
-├── main.py                # Ponto de entrada do aplicativo (Entrypoint)
-├── pyproject.toml         # Configurações de dependências
-└── README.md              # Documentação do projeto
+├── db/                      # Roteiros JSON padrão
+├── src/                     # Código-fonte principal
+│   ├── clp/                 # Módulos de comunicação (OpcClpClient, ModbusClpClient, Protocolos)
+│   ├── gui/                 # Interface gráfica e componentes (PySide6)
+│   │   ├── components/      # Tabs, Cards isolados e Widgets customizados
+│   │   ├── custom_widgets   # Componentes Qt sobrescritos (ex: NoScrollComboBox)
+│   │   ├── main_window.py   # Janela e orquestrador principal
+│   │   └── dialog_config.py # Janela de configuração de teste
+│   └── test/                # Classes de domínio (TestEngine, TestScript, TestStep, Actions)
+├── main.py                  # Ponto de entrada do aplicativo (Entrypoint)
+├── pyproject.toml           # Configurações de dependências
+└── README.md                # Documentação do projeto
 ```
 
 ## 🚀 Instalação e Uso Local
@@ -89,6 +94,15 @@ Pré-requisitos
 * **Criação do Roteiro:** Na aba de "Passos de Teste", o usuário adiciona os cartões de ação. O software possui Proteção UX (Fallbacks) que impede a seleção de comandos incompatíveis com o tipo da variável (ex: aplicar COMPARISON em variável booleana).
 
 * **Execução e Avaliação:** O JSON do roteiro é injetado no TestEngine, que se comunica com o equipamento físico/simulado e retorna o diagnóstico (Pass/Fail) no painel de Logs.
+
+## 🎛️ Ações disponiveis no programa
+* **WRITE**: escreve um valor em uma variável;
+* **READ_EQUAL**: lê uma variável `booleana` e compara com o valor solicitado;
+* **COMPARISON**: lê uma variável numérica (como `float`, `int`) e avalia se está de acordo com a expressão solicitada;
+* **WAIT_CHANGE**: lê uma variável `booleana` durante o tempo configurado em `timeout` até chegar ao valor solicitado;
+* **WAIT_UNTIL**: similar ao `WAIT_CHANGE`, porém para variáveis numéricas e recebe uma expressão de comparação como valor solicitado;
+* **PRESS_PUSH_BUTTON**: ação especializada para acionar botões dentro da simulação, pode-se escolher entre escrever o valor `True` ou `False` para diferenciar botões NA ou NF;
+* **SLEEP**: aguarda um tempo dentro do teste.
 
 ## 📄 Licença
 Este projeto é para uso educacional/privado, sob licença GNU General Public License v3.0.

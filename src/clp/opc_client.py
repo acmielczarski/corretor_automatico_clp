@@ -1,6 +1,6 @@
 # src/opc_clp_client.py
 from asyncua import Client, ua
-from .clp_client import CLPClient, Protocol
+from .clp_client import CLPClient, Protocol, VarDataType
 
 class OpcClpClient(CLPClient):
     """
@@ -113,16 +113,45 @@ class OpcClpClient(CLPClient):
         :type tipo_dado: str
         """
         try:
-            if tipo_dado == "BOOL":
+            # Basic Types
+            if tipo_dado == VarDataType.Basic.BOOL.name:
                 await node_obj.write_value(ua.DataValue(ua.Variant(bool(valor), ua.VariantType.Boolean)))
-            elif tipo_dado == "INT16":
+
+            elif tipo_dado == VarDataType.Basic.INT16.name:
                 await node_obj.write_value(ua.DataValue(ua.Variant(int(valor), ua.VariantType.Int16)))
-            elif tipo_dado == "INT32":
+
+            elif tipo_dado == VarDataType.Basic.UINT16.name:
+                await node_obj.write_value(ua.DataValue(ua.Variant(int(valor), ua.VariantType.UInt16)))
+
+            elif tipo_dado == VarDataType.Basic.INT32.name:
                 await node_obj.write_value(ua.DataValue(ua.Variant(int(valor), ua.VariantType.Int32)))
-            elif tipo_dado == "INT64":
+
+            elif tipo_dado == VarDataType.Basic.UINT32.name:
+                await node_obj.write_value(ua.DataValue(ua.Variant(int(valor), ua.VariantType.UInt32)))
+
+            elif tipo_dado == VarDataType.Basic.FLOAT.name:
+                await node_obj.write_value(ua.DataValue(ua.Variant(float(valor), ua.VariantType.Float)))          
+
+            # Extended Types
+            elif tipo_dado == VarDataType.Extended.INT64.name:
                 await node_obj.write_value(ua.DataValue(ua.Variant(int(valor), ua.VariantType.Int64)))
-            elif tipo_dado == "FLOAT":
-                await node_obj.write_value(ua.DataValue(ua.Variant(float(valor), ua.VariantType.Float)))
+
+            elif tipo_dado == VarDataType.Extended.UINT64.name:
+                await node_obj.write_value(ua.DataValue(ua.Variant(int(valor), ua.VariantType.UInt64)))
+
+            elif tipo_dado == VarDataType.Extended.DOUBLE.name:
+                await node_obj.write_value(ua.DataValue(ua.Variant(float(valor), ua.VariantType.Double)))
+
+            elif tipo_dado == VarDataType.Extended.STRING.name:
+                await node_obj.write_value(ua.DataValue(ua.Variant(str(valor), ua.VariantType.String)))
+
+            # TODO ajustar o valor para datetime de forma correta
+            elif tipo_dado == VarDataType.Extended.DATE_TIME.name:
+                await node_obj.write_value(ua.DataValue(ua.Variant(valor, ua.VariantType.DateTime)))
+
+            elif tipo_dado == VarDataType.Extended.EXTENSION_OBJECT.name:
+                await node_obj.write_value(ua.DataValue(ua.Variant(valor, ua.VariantType.ExtensionObject)))           
+
             else:
                 await node_obj.write_value(valor)
         except Exception as e:

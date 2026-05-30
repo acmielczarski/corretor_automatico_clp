@@ -44,7 +44,7 @@ class TestEngine:
             nome_clp_lower = nome_real_clp.lower()
             
             for tag_padrao, values in self.roteiro.dicionario_opc.items():
-                sinonimos = values.get('alias')
+                sinonimos = values.get('alias', [])
 
                 match_direto = tag_padrao.lower() in nome_clp_lower
                 match_sinonimo = any(sinonimo.lower() in nome_clp_lower for sinonimo in sinonimos)
