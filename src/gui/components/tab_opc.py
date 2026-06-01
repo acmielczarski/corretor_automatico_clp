@@ -86,6 +86,9 @@ class TabOPC(QWidget):
 
     def atualizar_tabela(self):
         """Atualiza a tabela contendo o mapeamento"""
+        if self.roteiro.dicionario_opc is None:
+            return
+        
         self.table_dicionario_opc.setRowCount(0)
         for key, values in self.roteiro.dicionario_opc.items():
             row = self.table_dicionario_opc.rowCount()
@@ -110,7 +113,7 @@ class TabOPC(QWidget):
             return
                 
         # Trata os dados para salvar        
-        sinonimos = sinonimos_str.replace(" ", "").split(",")                   
+        sinonimos = sinonimos_str.replace(" ", "").split(",")                       
         self.roteiro.dicionario_opc[tag] = {'type' : tipo, 'alias' : sinonimos}
         
         self.txt_nome_opc.clear()

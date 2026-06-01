@@ -73,6 +73,9 @@ class TabPassos(QWidget):
             QTimer.singleShot(80, self._rolar_para_o_final)
 
     def _adicionar_passo_vazio(self):
+        if self.roteiro.dicionario_opc is None:
+            QMessageBox.warning(self, "Aviso", "Não há tags no Dicionário OPC")
+            return
         novo = TestStep(Action.WRITE, description="Novo passo")
         self.roteiro.passos.append(novo)
 

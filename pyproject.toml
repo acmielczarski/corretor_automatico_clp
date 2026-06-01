@@ -1,6 +1,6 @@
 [project]
 name = "corretor-automatico-factoryio"
-version = "1.0.0"
+version = "1.0.2"
 description = "Script para correção automática de cenas do Factory I/O com CLPs utilizando Modbus TCP e OPC UA"
 authors = [
     {name = "Andrew Mielczarski", email = "andrew.mielczarski@senairs.org.br"}

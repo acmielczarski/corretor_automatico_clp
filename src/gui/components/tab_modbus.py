@@ -99,6 +99,8 @@ class TabModbus(QWidget):
             # Adiciona o frame ao layout vertical interno do scroll
             self.layout_linhas.addWidget(linha_widget)
 
+        self._validar_todos_enderecos()
+
     @Slot(str, str, int)
     def _salvar_alteracao_dados(self, tag_name: str, tipo_modbus: str, endereco_int: int):
         """
@@ -126,8 +128,7 @@ class TabModbus(QWidget):
         # Atualiza o visual dos widgets na tela
         for tag, widget in self.widget_linhas.items():
             dados = self.roteiro.mapa_modbus.get(tag)
-            if not dados:
-                print("caiu aqui!")
+            if not dados:                
                 continue
 
             chave = (dados['type'], dados['addr'])

@@ -44,10 +44,10 @@ class TestStep:
     :type description: str
     """
     action: Action    
-    tag_name: str
+    tag_name: str = ""
     order: int = None
     value: Any = None
-    data_type: str | None
+    data_type: str | None = None
     timeout: float = 5.0
     retries: int = 1
     step_to_retry: int = None
@@ -74,10 +74,10 @@ class TestScript:
     def __init__(self,
                  passos: List[TestStep]=None,
                  ordenado : bool = False,
-                 dicionario_opc : dict = None,
-                 mapa_modbus : dict = None,
+                 dicionario_opc : dict = {},
+                 mapa_modbus : dict = {},
                  log_callback: Callable[[str], None] = None):
-        self.passos = passos if passos is not None else[]
+        self.passos = passos if passos is not None else []
         self.ordenado = ordenado
         self.dicionario_opc = dicionario_opc        
         self.mapa_modbus = mapa_modbus
