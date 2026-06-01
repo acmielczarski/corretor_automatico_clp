@@ -8,7 +8,7 @@ Embora este software tenha sido desenvolvido e testado no ambiente `Codesys`, qu
 
 Mande um [e-mail](mailto:andrew.mielczarki@senairs.org.br) caso queira contribuir ou dar sugestões.  
 > [!NOTE]
-> *Andrew Mielczarski: <andrew.mielczarski@senairs.org.br>*
+> *Andrew Mielczarski:*<br><andrew.mielczarski@senairs.org.br>
 
 
 > [!IMPORTANT]
