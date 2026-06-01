@@ -24,7 +24,7 @@ class AvaliadorCLPGUI(QMainWindow):
         self.clp = None
 
         # Carregamento do roteiro padrão do programa
-        roteiro_padrao = "roteiro_nivel_error.json"
+        roteiro_padrao = "roteiro_nivel.json"
         caminho_padrao = os.path.join("db", roteiro_padrao)
         if os.path.exists(caminho_padrao):
             # Tenta carregar o arquivo padrão JSON para a janela inicial

@@ -13,6 +13,7 @@ class TabPassos(QWidget):
         super().__init__(parent)
         self.roteiro = roteiro
         self._setup_ui()
+        self.cards = {}
 
     def _setup_ui(self):
         layout_principal = QVBoxLayout(self)
@@ -51,6 +52,7 @@ class TabPassos(QWidget):
                 child.widget().deleteLater()
 
         tags_opc = self.roteiro.dicionario_opc
+        self.cards = {}
 
         for i, passo in enumerate(self.roteiro.passos):
             # Verifica se o índice coincide com o passo criado anteriormente
@@ -62,8 +64,11 @@ class TabPassos(QWidget):
             card.pedir_exclusao.connect(self._excluir_passo)
             card.pedir_subida.connect(self._subir_passo)
             card.pedir_descida.connect(self._descer_passo)
-            card.pedir_atualizacao.connect(self.atualizar_tabela)          
+            card.pedir_atualizacao.connect(self.atualizar_tabela)   
+            card.card_em_edicao.connect(self._configura_acoes_card_em_edicao)       
             self.layout_passos.addWidget(card)
+
+            self.cards[i] = card
 
         # Limpa o indicador da memória após finalizar o redesenho, 
         # garantindo que ações futuras (como reordenações) não reativem a edição sozinhos
@@ -73,7 +78,7 @@ class TabPassos(QWidget):
             QTimer.singleShot(80, self._rolar_para_o_final)
 
     def _adicionar_passo_vazio(self):
-        if self.roteiro.dicionario_opc is None:
+        if not self.roteiro.dicionario_opc:
             QMessageBox.warning(self, "Aviso", "Não há tags no Dicionário OPC")
             return
         novo = TestStep(Action.WRITE, description="Novo passo")
@@ -110,6 +115,17 @@ class TabPassos(QWidget):
             self.roteiro.passos[index], self.roteiro.passos[index+1] = \
                 self.roteiro.passos[index+1], self.roteiro.passos[index]
             self.atualizar_tabela()
+
+    @Slot(int, bool)
+    def _configura_acoes_card_em_edicao(self, idx_card : int, em_edicao : bool):
+        self.btn_add_novo.setEnabled(not em_edicao)
+
+        for i, card in self.cards.items():
+            if em_edicao:
+                if i != idx_card:
+                    card.btn_editar.setEnabled(False)
+            else:
+                card.btn_editar.setEnabled(True)
 
     def limpar_aba(self):
         if QMessageBox.question(self, "Limpar", "Remover TODOS os passos?") == QMessageBox.StandardButton.Yes:

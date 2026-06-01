@@ -19,6 +19,7 @@ class CardPassoTeste(QFrame):
     pedir_subida = Signal(int)
     pedir_descida = Signal(int)
     pedir_atualizacao = Signal(bool)
+    card_em_edicao = Signal(int, bool)
 
     def __init__(self, passo: TestStep, index: int, dict_tags: dict, iniciar_em_edicao : bool = False, parent=None):
         super().__init__(parent)
@@ -47,13 +48,13 @@ class CardPassoTeste(QFrame):
         else:
             self._alternar_modo_leitura() # Bloqueia o card na criação
 
-    def _conectar_sinais(self):
-        """Organiza as conexões de eventos do card em um único lugar."""
-        self.btn_salvar.clicked.connect(self._salvar_edicao)
-        self.btn_cancelar.clicked.connect(self._cancelar_edicao)
-        self.btn_editar.clicked.connect(self._entrar_modo_edicao)
-        self.combo_tag.currentTextChanged.connect(self.__configura_acao_por_tipo)
-        self.combo_acao.currentTextChanged.connect(self._ao_mudar_acao)
+    # def _conectar_sinais(self):
+    #     """Organiza as conexões de eventos do card em um único lugar."""
+    #     self.btn_salvar.clicked.connect(self._salvar_edicao)
+    #     self.btn_cancelar.clicked.connect(self._cancelar_edicao)
+    #     self.btn_editar.clicked.connect(self._entrar_modo_edicao)
+    #     self.combo_tag.currentTextChanged.connect(self.__configura_acao_por_tipo)
+    #     self.combo_acao.currentTextChanged.connect(self._ao_mudar_acao)
 
     def _setup_ui(self):
         """Contrói o layout com os Widgets vazios"""
@@ -195,7 +196,7 @@ class CardPassoTeste(QFrame):
     def _alternar_modo_leitura(self):
         """Trava os campos e mostra os botões do modo leitura"""
         self.em_edicao = False
-        self.__set_desabilitado_e_padrao(set_default=False) # Bloqueia os inputs
+        self.__set_desabilitado_e_padrao(set_default=False) # Bloqueia os inputs       
 
         # Alterna os botões no card
         self.btn_salvar.hide()
@@ -206,13 +207,15 @@ class CardPassoTeste(QFrame):
         self.btn_down.show()
         self.btn_editar.show()
 
+        self.card_em_edicao.emit(self.index, False)
+
         # Estilo de leitura suave
         self.setStyleSheet("CardPassoTeste { background-color: #1e1e1e; border: 1px solid #3d3d3d; border-radius: 10px; }")
 
     def _entrar_modo_edicao(self):
         """Destrava os campos pertinentes para a ação atual e entra no modo de edição"""
         self.em_edicao = True
-        self._ajustar_inputs_por_acao()
+        self._ajustar_inputs_por_acao()      
 
         # Alterna os botões no card
         self.btn_salvar.show()
@@ -223,11 +226,13 @@ class CardPassoTeste(QFrame):
         self.btn_down.hide()
         self.btn_editar.hide()
 
+        self.card_em_edicao.emit(self.index, True)
+
         # Destaque visual (borda amarela ou azul) para focar a atenção
         self.setStyleSheet("CardPassoTeste { background-color: #1e1e1e; border: 1px solid #3498db; border-radius: 10px; }")
-    
-    def _validar_cancelar_edicao(self) -> bool:
-        """Verifica se os valores obrigatórios estão preenchidos corretamente e pergunta ser quer arrumar ou excluir"""
+
+    def _validar_edicao(self, type : int) -> bool:
+        """Valida a edição de acordo com o tipo de ação solicitada. SALVAR = 0 ou CANCELAR = 1"""
         actual_action = Action[self.combo_acao.currentText()]
         requires_value = actual_action != Action.SLEEP
         requires_time = actual_action == Action.WAIT_CHANGE or actual_action == Action.WAIT_UNTIL or actual_action == Action.PRESS_PUSH_BUTTON or actual_action == Action.SLEEP
@@ -235,66 +240,45 @@ class CardPassoTeste(QFrame):
         missing_field = None
         if requires_value and not self.txt_valor.text():
             if actual_action == Action.WAIT_UNTIL or actual_action == Action.COMPARISON:
-                missing_field = "expressão"
+                missing_field = "EXPRESSÃO"
             else:
-                missing_field = "valor"    
+                missing_field = "VALOR"    
         elif requires_time and not self.txt_tempo.text():
             if actual_action == Action.PRESS_PUSH_BUTTON:
-                missing_field = "pulso"
+                missing_field = "PULSO"
             else:
-                missing_field = "timeout"
+                missing_field = "TIMEOUT"
 
         if missing_field is not None:
-            resposta = QMessageBox.question(self.parent(), "Aviso",
-                                            f"O campo \"{missing_field}\" deve ser preenchido para a ação {actual_action.name}.\nDeseja corrigir o passo? Caso descartar seja selecionado, o passo será excluído",
-                                            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Discard)
-            
-            if resposta == QMessageBox.StandardButton.Yes:
-                return False
-            elif resposta == QMessageBox.StandardButton.Discard:
-                self.pedir_exclusao.emit(self.index)
-                return False
-        else:
-            return True        
+            message = f"O campo {missing_field} deve ser preenchido para a ação {actual_action.name}"
+            if type == 0:
+                QMessageBox.warning(self.parent(), "Aviso", message)                
+            elif type == 1:
+                resposta = QMessageBox.question(self.parent(), "Aviso",
+                                            f"{message}\nDeseja corrigir o passo? Caso descartar seja selecionado, o passo será excluído",
+                                            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Discard)                
+                if resposta == QMessageBox.StandardButton.Discard:
+                    self.pedir_exclusao.emit(self.index)
+            else:
+                print("[ERRO] Tipo de operação não configurado")            
+            return False        
+        return True         
 
     def _cancelar_edicao(self):
         """Cancela a edição e retorna os valores originais do passo, verificando se o preenchimento é válido"""
-        if not self._validar_cancelar_edicao():
+        if not self._validar_edicao(1):
             return
         
         self._carregar_dados_do_objeto()
-        self._alternar_modo_leitura()
-    
-    def _validar_edicao(self) -> bool:
-        """Verifica se os campos obrigatórios estão preenchidos de acordo com a ação"""
-        actual_action = Action[self.combo_acao.currentText()]
-        requires_value = actual_action != Action.SLEEP
-        requires_time = actual_action == Action.WAIT_CHANGE or actual_action == Action.WAIT_UNTIL or actual_action == Action.PRESS_PUSH_BUTTON or actual_action == Action.SLEEP
-
-        missing_field = None
-        if requires_value and not self.txt_valor.text():
-            if actual_action == Action.WAIT_UNTIL or actual_action == Action.COMPARISON:
-                missing_field = "expressão"
-            else:
-                missing_field = "valor"    
-        elif requires_time and not self.txt_tempo.text():
-            if actual_action == Action.PRESS_PUSH_BUTTON:
-                missing_field = "pulso"
-            else:
-                missing_field = "timeout"
-
-        if missing_field is not None:
-            QMessageBox.warning(self.parent(), "Aviso", f"O campo \"{missing_field}\" deve ser preenchido para a ação {actual_action.name}")
-            return False
-        
-        return True
+        self._alternar_modo_leitura()    
     
     def _salvar_edicao(self):
         """Salva o objeto editado no Step do passo caso seja validado"""
-        # Verifica se está tudo ok com o passo a ser salvo
-        if not self._validar_edicao:
-            return
-        
+        # Verifica se está tudo ok com o passo a ser salvo        
+
+        if not self._validar_edicao(0):
+            return        
+
         # Pega os valores dos campos
         self.passo.tag_name = self.combo_tag.currentText() if self.combo_tag.currentText() != "-" else ""
         self.passo.action = Action[self.combo_acao.currentText()]
@@ -335,8 +319,7 @@ class CardPassoTeste(QFrame):
     #--------------------------------------------------------------------------------#
     #                            LÓGICA DE CAMPOS (UI)                               #
     #--------------------------------------------------------------------------------#
-
-    #TODO ajustar o método para quando a ação sair de SLEEP para que ache a primeira variável válida para a nova ação selecionada. (melhoria de UX)
+    #     
     def _ao_mudar_acao(self):
         """Ajusta campos quando a ação é modificada no card."""
         # Bloqueia a execução deste método caso não esteja em modo de edição, útil quando estamos preenchendo o card

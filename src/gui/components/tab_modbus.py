@@ -80,7 +80,7 @@ class TabModbus(QWidget):
                     tipo_inicial = "COIL"
                 else:
                     tipo_inicial = "HOLDING_REGISTER"
-                self.roteiro.mapa_modbus[tag_name] = {"type": tipo_inicial, "addr": 0}
+                self.roteiro.mapa_modbus[tag_name] = {"type": tipo_inicial, "addr": self._ultimo_endereco_por_tipo(tag_name, tipo_inicial)}
                 config_existente = self.roteiro.mapa_modbus[tag_name]
 
             # Instancia o widget filho customizado
@@ -140,6 +140,21 @@ class TabModbus(QWidget):
                 widget._set_estado_erro(False)
 
         self.validacao_modbus.emit(tem_erro)
+
+    def _ultimo_endereco_por_tipo(self, tag_atual : str, tipo : str) -> int:
+        """Verifica o último endereço adicionado de acordo com o tipo da variável e retorna o próximo disponível. Começando sempre em 0"""
+        ultimo_endereco = None
+
+        for tag, dados in self.roteiro.mapa_modbus.items():
+            if tipo == dados.get('type') and tag != tag_atual:
+                ultimo_endereco = dados.get('addr')
+
+        if ultimo_endereco is None:
+            return 0
+        else:
+            return ultimo_endereco + 1
+
+
 
     def limpar_aba(self):
         """Zera as configurações do modelo de dados e força a reatualização visual."""
