@@ -21,35 +21,33 @@ class TestStep:
     """
     Define a estrutura de um único passo dentro de um roteiro de testes.
     
-    :param action: comando aplicado na etapa. see: ``Action``
+    :param action: comando aplicado na etapa. utiliza: :class:`Action`
     :type action: Action
-    :param order: ordem de execução do teste. Criada automaticamente ao configurar ``TestEngine``.
-    :type order: int
+    :param order: ordem de execução do teste baseado na ordem do roteiro. Criada automaticamente ao configurar :class:`TestEngine`.
+    :type order: int = None
     :param tag_name: Nome lógico da TAG configurada para o teste.
     :type tag_name: str
-    :param value: Valor que será escrito ou esperado em ``tag_name``.
-    :type value: Any
-    :param data_type: *(Opcional)* Tipo de dado para escrita.
-        A função identifica automaticamente entre ``BOOL``, ``INT16`` e ``FLOAT``.
-        Se o valor INT for maior que 32767, tenta mandar ``INT32``.
-        *Default: None*
+    :param value: Valor (ou expressão de comparação) que será escrito ou esperado em `tag_name`.
+    :type value: Any = None
+    :param data_type: Tipo de dado para escrita.
+        Utiliza os nomes em :class:`src.clp.VarDataType`.        
     :type data_type: str
-    :param timeout: Tempo máximo de espera para ações de monitoramento. *Default: 5.0*
-    :type timeout: float
-    :param retries: Quantidade de tentativas para o passo. *Default: 1*
-    :type retries: int
-    :param step_to_retry: Passo que deve ser repetido caso o passo atual falhe. Se o valor for ``None`` e ``retries > 1``, executa novamente o mesmo passo.
-    :type step_to_retry: int
-    :param pulse_time: Tempo para voltar o botão para o estado original. Usado somente se ``action = PRESS_PUSH_BUTTON``. *Default: 0.3*
-    :type pulse_time: float
+    :param timeout: Tempo máximo de espera para ações de monitoramento.
+    :type timeout: float = 5.0
+    :param retries: Quantidade de tentativas para o passo.
+    :type retries: int = 1
+    :param step_to_retry: Passo que deve ser repetido caso o passo atual falhe. Se o valor for ``None`` e ``retries > 1``, repete o próprio passo.
+    :type step_to_retry: int = None
+    :param pulse_time: Tempo para voltar o botão para o estado original. Usado somente se ``action = PRESS_PUSH_BUTTON``.
+    :type pulse_time: float = 0.3
     :param description: *(Opcional)* Descrição do passo para log.
     :type description: str
     """
     action: Action    
-    tag_name: str = ""
+    tag_name: str
     order: int = None
     value: Any = None
-    data_type: str | None = None
+    data_type: str | None
     timeout: float = 5.0
     retries: int = 1
     step_to_retry: int = None
@@ -67,7 +65,7 @@ class TestScript:
     :param passos: Lista com os passos do teste.
     :type passos: List[TestStep]
     :param ordenado: Indica se o teste está ordenado (possui atributo `order` nos objetos `TestStep` de forma crescente), se `False`, ordena os passos de acordo com o index de `List`. _Default: False_
-    :type ordenado: bool
+    :type ordenado: bool = False    
     :param dicionario_opc: Lista de sinônimos para as tags configuradas. Tenta encontrar dentro o servidor OPC UA os sinônimos para casar com as variáveis configuradas, evitando retrabalho para encontrar nomes de variáveis distintos para cada projeto.
     :type dicionario_opc: dict[str, dict[str, Any]]
     :param mapa_modbus: Mapa dos endereços Modbus contendo nome da variável, tipo de variável (utiliza os nomes de :class:`ModbusType`) e endereço.

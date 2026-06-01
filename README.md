@@ -44,7 +44,7 @@ CORRETOR_AUTOMATICO_CLP/
 │   ├── clp/                 # Módulos de comunicação (OpcClpClient, ModbusClpClient, Protocolos)
 │   ├── gui/                 # Interface gráfica e componentes (PySide6)
 │   │   ├── components/      # Tabs, Cards isolados e Widgets customizados
-│   │   ├── custom_widgets   # Componentes Qt sobrescritos (ex: NoScrollComboBox)
+│   │   ├── custom_widgets/  # Componentes Qt sobrescritos (ex: NoScrollComboBox)
 │   │   ├── main_window.py   # Janela e orquestrador principal
 │   │   └── dialog_config.py # Janela de configuração de teste
 │   └── test/                # Classes de domínio (TestEngine, TestScript, TestStep, Actions)

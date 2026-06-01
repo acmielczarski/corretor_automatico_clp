@@ -5,6 +5,9 @@ from pymodbus.client import AsyncModbusTcpClient
 from enum import Enum, auto
 
 class ModbusType(Enum):
+    """
+    Operações Modbus.    
+    """
     COIL = auto()
     INPUT_STATUS = auto()
     INPUT_REGISTER = auto()
@@ -60,8 +63,8 @@ class ModbusClpClient(CLPClient):
         """
         Armazena os nomes, tipos e valores das variáveis Modbus contidas em `mapa_modbus`
 
-        :param mapa_modbus: Objeto ``dict`` contendo o mapeamento das variáveis no servidor Modbus
-        :type mapa_modbus: dict
+        :param mapa_modbus: Objeto ``dict`` contendo o mapeamento e o tipo das variáveis no servidor Modbus
+        :type mapa_modbus: dict[str, dict[str, Any]]
         """
         self.tags = mapa_modbus if mapa_modbus is not None else {}
         print(f"[ModbusCLient] Mapa de IOs carregado. {len(self.tags)} variáveis configuradas.")
@@ -98,7 +101,7 @@ class ModbusClpClient(CLPClient):
         except Exception as e:
             print(f"[Modbus Client] Erro ao ler do servidor Modbus. {e}")
 
-    async def write_node(self, node_obj : dict, valor : bool | int, tipo_dado = None):
+    async def write_node(self, node_obj : dict, valor : bool | int):
         """
         Escreve ``valor`` em ``node_obj``.
 

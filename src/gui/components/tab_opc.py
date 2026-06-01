@@ -15,6 +15,7 @@ class TabOPC(QWidget):
         self._setup_ui()
 
     def _setup_ui(self):
+        """Contrução dos elementos da aba"""
         layout = QVBoxLayout(self)
         
         lbl_info = QLabel("Configuração do mapeamento de Tags e Sinônimos do Roteiro")
@@ -84,6 +85,7 @@ class TabOPC(QWidget):
         self.atualizar_tabela()
 
     def atualizar_tabela(self):
+        """Atualiza a tabela contendo o mapeamento"""
         self.table_dicionario_opc.setRowCount(0)
         for key, values in self.roteiro.dicionario_opc.items():
             row = self.table_dicionario_opc.rowCount()
@@ -95,6 +97,7 @@ class TabOPC(QWidget):
             self.table_dicionario_opc.setItem(row, 2, QTableWidgetItem(", ".join(values.get('alias'))))
 
     def _adicionar_sinonimo_opc(self):
+        """Adiciona a confiuração da tag na lista de sinônimos"""
         tag = self.txt_nome_opc.text().strip()
         tipo = self.combo_data_type.currentText()
         sinonimos_str = self.txt_sinonimos_opc.text().strip()      
@@ -106,6 +109,7 @@ class TabOPC(QWidget):
             QMessageBox.warning(self, "Aviso", "Insira os sinônimos separados por vírgula.")
             return
                 
+        # Trata os dados para salvar        
         sinonimos = sinonimos_str.replace(" ", "").split(",")                   
         self.roteiro.dicionario_opc[tag] = {'type' : tipo, 'alias' : sinonimos}
         
@@ -114,10 +118,12 @@ class TabOPC(QWidget):
         self.atualizar_tabela()
 
     def limpar_aba(self):
+        """Limpa o mapeamento OPC"""
         self.roteiro.dicionario_opc.clear()
         self.atualizar_tabela()
 
     def _atualiza_lista_tipos(self):
+        """Ajusta os tipos mostrados no combo box"""
         estado_atual = self.checkbox_extended_type.checkState()
         if estado_atual == Qt.CheckState.Checked:            
             self.combo_data_type.addItems(t.name for t in VarDataType.Extended)
@@ -126,6 +132,7 @@ class TabOPC(QWidget):
             self.combo_data_type.addItems(t.name for t in VarDataType.Basic)
 
     def _editar_linha_selecionada_opc(self):
+        """Chama os dados de uma linha para edição, exclui o registro copiado para evitar duplicação"""
         linha_selecionada = self.table_dicionario_opc.currentRow()
 
         # Verifica se o usuário selecionou alguma linha
@@ -163,6 +170,7 @@ class TabOPC(QWidget):
         self.atualizar_tabela()
     
     def _excluir_linha_selecionada_opc(self):
+        """Exclui a linha selecionada na tabela, pedindo confirmação."""
         linha_selecionada = self.table_dicionario_opc.currentRow()
 
         # Verifica se o usuário selecionou alguma linha

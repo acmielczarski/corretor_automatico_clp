@@ -1,11 +1,11 @@
 # src/gui/dialog_config.py
 from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QPushButton, 
                                QDialog, QMessageBox, QTabWidget, QFileDialog)
+from PySide6.QtCore import Slot
 from src.test import TestScript
 
 # Importando as tabs
 from src.gui.components import TabOPC, TabModbus, TabPassos
-# from src.gui.components.tests import TabPassos
 
 class JanelaConfigurarTeste(QDialog):
     """Janela secundária com Abas para gerenciar passos, regras OPC e mapas Modbus."""  
@@ -31,7 +31,9 @@ class JanelaConfigurarTeste(QDialog):
 
         self.tabs.addTab(self.tab_opc, "🔗 Dicionário OPC")
         self.tabs.addTab(self.tab_modbus, "⚙️ Mapeamento Modbus")
-        self.tabs.addTab(self.tab_passos, "📍 Passos do Roteiro")             
+        self.tabs.addTab(self.tab_passos, "📍 Passos do Roteiro")
+
+        self.tab_modbus.validacao_modbus.connect(self._bloqueia_salvamento_por_erro)          
         
         # --- BOTÕES DE AÇÃO GLOBAIS ---
         layout_botoes = QHBoxLayout()
@@ -142,3 +144,13 @@ class JanelaConfigurarTeste(QDialog):
         resposta = QMessageBox.question(self, "Salvar", "Deseja carregar o roteiro configurado para o teste ativo?\nOs passos serão ordenados automaticamente de acordo com a tabela.", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         if resposta == QMessageBox.StandardButton.Yes:
             self.accept()
+
+    @Slot(bool)
+    def _bloqueia_salvamento_por_erro(self, tem_erro : bool):
+        """Impede o salvamento caso o mapeamento modbus apresente erro na configuração"""
+        self.btn_concluir.setEnabled(not tem_erro)
+
+        if tem_erro:
+            self.btn_concluir.setToolTip("Existem erros no mapeamento Modbus!")
+        else: 
+            self.btn_concluir.setToolTip("")        

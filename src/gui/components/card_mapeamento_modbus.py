@@ -19,10 +19,11 @@ class LinhaMapeamentoModbus(QFrame):
     def __init__(self, tag_name: str, tipo_inicial: str = "COIL", endereco_inicial: int = 0, parent=None):
         super().__init__(parent)
         self.tag_name = tag_name
+        self.setObjectName("card_modbus")
         
         # Estilização básica de bloco/linha comercial
         self.setFrameShape(QFrame.Shape.StyledPanel)
-        self.setStyleSheet("QFrame { background-color: #2d2d2d; border-radius: 6px; padding: 2px; }")
+        self.setStyleSheet("#card_modbus { background-color: #2d2d2d; border-radius: 6px; padding: 2px; }")
         
         layout = QHBoxLayout(self)
         
@@ -32,6 +33,15 @@ class LinhaMapeamentoModbus(QFrame):
         self.lbl_tag.setMinimumWidth(150)
         layout.addWidget(self.lbl_tag)
         
+        layout.addStretch()
+
+        self.lbl_alerta = QLabel("⚠️")        
+        # Define um espaçamento e remove qualquer borda herdada do QFrame para o ícone
+        self.lbl_alerta.setStyleSheet("font-size: 14px; border: none; background: transparent;")
+        self.lbl_alerta.setToolTip("Atenção: Este endereço já está sendo utilizado por outra variável!")
+        self.lbl_alerta.hide() 
+        layout.addWidget(self.lbl_alerta)
+
         layout.addStretch()
 
         # 2. ComboBox para Seleção do Tipo Modbus
@@ -73,9 +83,18 @@ class LinhaMapeamentoModbus(QFrame):
         if tipo_inicial == ModbusType.COIL.name or tipo_inicial == ModbusType.INPUT_STATUS.name: 
             itens_to_disable = [ModbusType.HOLDING_REGISTER.name, ModbusType.INPUT_REGISTER.name]
         else:            
-            itens_to_disable = [ModbusType.COIL.name, ModbusType.INPUT_STATUS.name]           
+            itens_to_disable = [ModbusType.COIL.name, ModbusType.INPUT_STATUS.name]
 
         for i in range(modelo.rowCount()):
             if modelo.item(i).text() in itens_to_disable:
                 modelo.item(i).setEnabled(False)
+
+    def _set_estado_erro(self, com_erro : bool):
+        """Seta que alguma linha possui conflito de endereço dentro do mapeamento, setando o estilo do card"""
+        if com_erro:
+            self.setStyleSheet("#card_modbus { background-color: #2d2d2d; border: 1px solid #e74c3c; border-radius: 6px; padding: 2px; }")
+            self.lbl_alerta.show()
+        else:
+            self.setStyleSheet("#card_modbus { background-color: #2d2d2d; border: 1px solid transparent; border-radius: 6px; padding: 2px; }")
+            self.lbl_alerta.hide()
             

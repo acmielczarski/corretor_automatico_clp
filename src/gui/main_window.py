@@ -225,8 +225,7 @@ class AvaliadorCLPGUI(QMainWindow):
         self.txt_log.clear()
         self.roteiro_atual.log = self.log
         self.roteiro_atual.describe()
-
-    #TODO implementar o método para salvar o log atual em um arquivo txt
+    
     def salvar_log_atual(self):
         caminho, _ = QFileDialog.getSaveFileName(self, "Salvar log", "", "Arquivos de texto (*.txt)")
         if caminho:
@@ -241,8 +240,7 @@ class AvaliadorCLPGUI(QMainWindow):
                     f.write(header_txt + self.txt_log.toPlainText())
                 QMessageBox.information(self, "Sucesso", "Log salvo com sucesso.")
             except Exception as e:
-                QMessageBox.critical(self, "Erro", f"Erro ao salvar o arquivo:\n{e}")
-        # QMessageBox.warning(self, "Aviso", "Método não implementado ainda.")
+                QMessageBox.critical(self, "Erro", f"Erro ao salvar o arquivo:\n{e}")        
 
     @asyncSlot()
     async def processar_teste_gui(self):

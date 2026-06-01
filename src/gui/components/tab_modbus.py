@@ -1,7 +1,8 @@
 # src/gui/components/tab_modbus.py
 from PySide6.QtWidgets import (QWidget, QVBoxLayout,
                                QLabel, QScrollArea)
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Qt, Slot, Signal
+from collections import defaultdict
 from .card_mapeamento_modbus import LinhaMapeamentoModbus
 from src.test import TestScript
 
@@ -9,9 +10,13 @@ from src.test import TestScript
 #                    A COMPONENTIZAÇÃO DA ABA MODBUS PRINCIPAL                   #
 #--------------------------------------------------------------------------------#
 class TabModbus(QWidget):
+
+    # Sinal para ajustar o estilo do card se existir erro
+    validacao_modbus = Signal(bool)
     def __init__(self, roteiro : TestScript, parent=None):
         super().__init__(parent)
         self.roteiro = roteiro
+        self.widget_linhas = {} # Dicionário de acesso aos widgets filhos
         self._setup_ui()
 
     def _setup_ui(self):
@@ -54,6 +59,8 @@ class TabModbus(QWidget):
             if widget is not None:
                 widget.deleteLater()
 
+        self.widget_linhas.clear() # Limpa a referência aos widgets filho
+
         # 2. Se não houver tags cadastradas no OPC UA ainda, avisa o usuário
         if not self.roteiro.dicionario_opc:
             lbl_vazio = QLabel("Nenhuma Tag cadastrada no Dicionário OPC UA.\nCadastre tags na aba anterior para configurar o Modbus.")
@@ -83,6 +90,8 @@ class TabModbus(QWidget):
                 endereco_inicial=config_existente["addr"],                
                 parent=self
             )
+
+            self.widget_linhas[tag_name] = linha_widget # Referência para a configuração do widget filho
             
             # CONEXÃO DO SINAL: Conecta o sinal do filho ao slot (método) receptor no pai
             linha_widget.mapeamento_alterado.connect(self._salvar_alteracao_dados)
@@ -94,23 +103,42 @@ class TabModbus(QWidget):
     def _salvar_alteracao_dados(self, tag_name: str, tipo_modbus: str, endereco_int: int):
         """
         SLOT RECEPTOR: Executado automaticamente toda vez que qualquer uma 
-        das linhas disparar uma alteração de valor.
-        """
-        # Validação extra de duplicidade física de memória em tempo de digitação
-        for outra_tag, dados in self.roteiro.mapa_modbus.items():
-            if outra_tag == tag_name:
-                continue
-            if dados.get("type") == tipo_modbus and dados.get("addr") == endereco_int and endereco_int != 0:
-                # Se houver choque de endereço, você pode emitir um log silencioso ou pintar o campo.
-                # Como o evento roda a cada caractere digitado, logs intrusivos (QMessageBox) aqui 
-                # atrapalhariam a digitação. Atualizamos os dados mesmo assim para o modelo.
-                pass
-
+        das linhas disparar uma alteração de valor e verifica se há conflito de endereços.
+        """        
         # Atualiza diretamente o dicionário de dados do roteiro em tempo real
         self.roteiro.mapa_modbus[tag_name] = {
             "type": tipo_modbus,
             "addr": endereco_int
         }
+        self._validar_todos_enderecos()
+
+    def _validar_todos_enderecos(self):
+        """Verifica as colisões de endereçamento"""
+        tem_erro = False
+
+        # Mapeia os endereços, verificando o que está sendo usado {(Tipo, Endereço): [tag1, tag2]}
+        mapa_verificacao = defaultdict(list)        
+        
+        for tag, dados in self.roteiro.mapa_modbus.items():
+            chave = (dados['type'], dados['addr'])
+            mapa_verificacao[chave].append(tag)
+
+        # Atualiza o visual dos widgets na tela
+        for tag, widget in self.widget_linhas.items():
+            dados = self.roteiro.mapa_modbus.get(tag)
+            if not dados:
+                print("caiu aqui!")
+                continue
+
+            chave = (dados['type'], dados['addr'])
+
+            if len(mapa_verificacao[chave]) > 1:
+                widget._set_estado_erro(True)
+                tem_erro = True
+            else:
+                widget._set_estado_erro(False)
+
+        self.validacao_modbus.emit(tem_erro)
 
     def limpar_aba(self):
         """Zera as configurações do modelo de dados e força a reatualização visual."""

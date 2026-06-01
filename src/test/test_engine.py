@@ -11,7 +11,7 @@ class TestEngine:
     Motor executor que recebe um roteiro de testes (lista de TestSteps),
     traduz os nomes das tags usando o mapeamento e executa as ações no CLP.
 
-    :param clp_client: Objeto de :class:`CLPClient`
+    :param clp_client: Objeto de :class:`CLPClient` configurado para protocolo `OPC UA` ou `Modbus TCP`.
     :type clp_client: CLPClient    
     :param roteiro: Roteiro do teste da classe :class:`TestScript`, contendo passos do teste, dicionário OPC e mapeamento Modbus.
     :type roteiro: TestScript
@@ -165,7 +165,7 @@ class TestEngine:
         if atual == expected:
             return True
         
-        self.log(f"    [Erro] Esperado: {expected} | Lido: {atual}")
+        self.log(f"    [Erro] Variável: {tag} - Esperado: {expected} | Lido: {atual}")
         return False
 
     async def _do_wait(self, tag : str, val : Any, timeout : float) -> bool:
@@ -176,13 +176,13 @@ class TestEngine:
             await asyncio.sleep(0.1)
             if await self.clp.read_node(no) == val:
                 return True
-        self.log(f"    [Timeout] A variável não atingiu a condição '{val}' em {timeout}s.")
+        self.log(f"    [Timeout] A variável \'{tag}\' não atingiu a condição '{val}' em {timeout}s.")
         return False
 
     async def _do_press_button(self, tag : str, pulse_time : float, value : bool = True) -> bool:
         """Executa a sequência Acionar -> Esperar -> Desacionar."""
         no = self.tags_mapeadas[tag]
-        self.log(f"    [Pulso] Acionando {tag}...")
+        self.log(f"    [Pulso] Acionando {tag} com valor {value}...")
         tempo_limite = time.monotonic() + pulse_time
         while time.monotonic() <= tempo_limite:
             await self.clp.write_node(no, value, tipo_dado="BOOL")
@@ -195,7 +195,7 @@ class TestEngine:
         """Verifica o valor de uma tag de acordo com a expressão informada"""
         val_str, op_func = self.__verifica_operador(exp)
         if not val_str:
-            return
+            return False
         try:
             val = float(val_str) if "." in val_str else int(val_str)
         except Exception as e:
@@ -207,12 +207,14 @@ class TestEngine:
         if op_func(atual, val):
             return True
 
-        self.log(f"    [Erro] Esperado: {exp} | Valor atual: {atual}")
+        self.log(f"    [Erro] Variável: {tag} - Esperado: {exp} | Lido: {atual}")
         return False
     
     async def _do_wait_until(self, tag : str, exp : str, timeout : float) -> bool:
         """Aguarda que o valor de uma variável chegue na expressão informada"""
         val_str, op_func = self.__verifica_operador(exp)
+        if not val_str:
+            return False
         try:            
             val = float(val_str) if "." in val_str else int(val_str)            
         except Exception as e:
@@ -233,17 +235,18 @@ class TestEngine:
             leitura = await self.clp.read_node(no)
             if op_func(leitura, val):
                 return True            
-        self.log(f"    [Timeout] A variável não atingiu a condição '{exp}' em {timeout}s.")
+        self.log(f"    [Timeout] A variável \'{tag}\' não atingiu a condição '{exp}' em {timeout}s.")
         return False
     
-    def __verifica_operador(self, exp : str) -> list[str, Any] | list[bool, None]:
+    def __verifica_operador(self, exp : str) -> tuple[str, Callable[[Any, Any], bool]] | tuple[bool, None]:
+        """Verifica uma string contendo uma comparação e retorna qual o operador e o valor a ser comparado"""
         # Trata a string de expressão eliminando espaços caso possua
         if " " in exp:
             exp = exp.replace(" ", "")
 
         # Identifica a operação solicitada        
         op_str = None # String da operação
-        op_func = None # Objeto de operator de acordo com a string da operação
+        op_func : Callable[[Any, Any], bool] | None = None # Objeto de operator de acordo com a string da operação
 
         # Procura pela comparação dentro do mapa de operadores e atribui o operador caso encontre
         # Levanta um erro caso não encontre o operador enviado em exp
@@ -254,15 +257,15 @@ class TestEngine:
                 break
         if not op_str:    
             self.log("    [Erro] Operador de comparação não identificado")
-            return [False, None]        
+            return False, None       
         # Separa e trata o valor informado em exp
         _, val_str = exp.split(op_str, 1)
 
-        return [val_str, op_func]
+        return val_str, op_func
         
     
     async def _do_executa_passo(self, passo : TestStep) -> bool:
-        """Executa a ação do passo"""
+        """Direciona a ação do passo"""
         try:
             if passo.action == Action.WRITE:
                 return await self._do_write(passo.tag_name, passo.value, passo.data_type)

@@ -1,4 +1,4 @@
-# src/clp_clien.py
+# src/clp_client.py
 
 from typing import Any
 from enum import Enum, auto
@@ -8,7 +8,17 @@ class Protocol(Enum):
     MODBUS_TCP = auto()
 
 class VarDataType(Enum):
-    """Tipos de dados para as variáveis. Divididos em `Basic` e `Extended`"""
+    """
+    Tipos de dados para as variáveis. Divididos em `Basic` e `Extended`.
+    
+    Basic: `BOOL`, `INT16`, `UINT16`, `INT32`, `UINT32` e `FLOAT`.
+    
+    Extended: `INT64`, `UINT64`, `DOUBLE`, `STRING`, `DATE_TIME`, `EXTENSION_OBJECT`.
+
+
+    **Importante:** Os tipos `DATE_TIME` e `EXTENSION_OBJECT` não possuem nenhum tratamento específico para o valor, certifique-se
+    de estar enviando corretamente o valor do dado para evitar erros de escrita.
+    """
     class Basic(Enum):
         """Tipos de variáveis básicas"""
         BOOL = auto()
@@ -19,7 +29,7 @@ class VarDataType(Enum):
         FLOAT = auto()
 
     class Extended(Enum): 
-        """Tipos especializados e variáveis"""   
+        """Tipos especializados de variáveis"""   
         INT64 = auto()
         UINT64 = auto()    
         DOUBLE = auto()

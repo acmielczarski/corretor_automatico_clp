@@ -227,7 +227,7 @@ class CardPassoTeste(QFrame):
         self.setStyleSheet("CardPassoTeste { background-color: #1e1e1e; border: 1px solid #3498db; border-radius: 10px; }")
     
     def _validar_cancelar_edicao(self) -> bool:
-        """Verifica se os passos mínimos estão preenchidos corretamente e pergunta ser quer arrumar ou excluir"""
+        """Verifica se os valores obrigatórios estão preenchidos corretamente e pergunta ser quer arrumar ou excluir"""
         actual_action = Action[self.combo_acao.currentText()]
         requires_value = actual_action != Action.SLEEP
         requires_time = actual_action == Action.WAIT_CHANGE or actual_action == Action.WAIT_UNTIL or actual_action == Action.PRESS_PUSH_BUTTON or actual_action == Action.SLEEP
@@ -235,18 +235,18 @@ class CardPassoTeste(QFrame):
         missing_field = None
         if requires_value and not self.txt_valor.text():
             if actual_action == Action.WAIT_UNTIL or actual_action == Action.COMPARISON:
-                missing_field = "\"expressão\""
+                missing_field = "expressão"
             else:
-                missing_field = "\"valor\""    
+                missing_field = "valor"    
         elif requires_time and not self.txt_tempo.text():
             if actual_action == Action.PRESS_PUSH_BUTTON:
-                missing_field = "\"pulso\""
+                missing_field = "pulso"
             else:
-                missing_field = "\"timeout\""
+                missing_field = "timeout"
 
         if missing_field is not None:
             resposta = QMessageBox.question(self.parent(), "Aviso",
-                                            f"O campo {missing_field} deve ser preenchido para a ação {actual_action.name}.\nDeseja corrigir o passo? Caso descartar seja selecionado, o passo é excluído",
+                                            f"O campo \"{missing_field}\" deve ser preenchido para a ação {actual_action.name}.\nDeseja corrigir o passo? Caso descartar seja selecionado, o passo será excluído",
                                             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Discard)
             
             if resposta == QMessageBox.StandardButton.Yes:
@@ -258,7 +258,7 @@ class CardPassoTeste(QFrame):
             return True        
 
     def _cancelar_edicao(self):
-        """Cancela a edição e retorna os valores originais do passo"""
+        """Cancela a edição e retorna os valores originais do passo, verificando se o preenchimento é válido"""
         if not self._validar_cancelar_edicao():
             return
         
@@ -274,17 +274,17 @@ class CardPassoTeste(QFrame):
         missing_field = None
         if requires_value and not self.txt_valor.text():
             if actual_action == Action.WAIT_UNTIL or actual_action == Action.COMPARISON:
-                missing_field = "\"expressão\""
+                missing_field = "expressão"
             else:
-                missing_field = "\"valor\""    
+                missing_field = "valor"    
         elif requires_time and not self.txt_tempo.text():
             if actual_action == Action.PRESS_PUSH_BUTTON:
-                missing_field = "\"pulso\""
+                missing_field = "pulso"
             else:
-                missing_field = "\"timeout\""
+                missing_field = "timeout"
 
         if missing_field is not None:
-            QMessageBox.warning(self.parent(), "Aviso", f"O campo {missing_field} deve ser preenchido para a ação {actual_action.name}")
+            QMessageBox.warning(self.parent(), "Aviso", f"O campo \"{missing_field}\" deve ser preenchido para a ação {actual_action.name}")
             return False
         
         return True
@@ -295,12 +295,14 @@ class CardPassoTeste(QFrame):
         if not self._validar_edicao:
             return
         
+        # Pega os valores dos campos
         self.passo.tag_name = self.combo_tag.currentText() if self.combo_tag.currentText() != "-" else ""
         self.passo.action = Action[self.combo_acao.currentText()]
         self.passo.description = self.txt_desc.text()
         self.passo.retries = int(self.txt_retries.text()) if self.txt_retries.text() else 1
         self.passo.data_type = self.dict_tags[self.passo.tag_name].get('type') if self.passo.action != Action.SLEEP else None
 
+        # Tratamento do campo valor, prioriza valores numéricos
         val_raw = self.txt_valor.text().strip().replace(" ", "")
         if val_raw.lower() == "true" or (self.passo.data_type == "BOOL" and val_raw == "1"):
             self.passo.value = True
@@ -312,13 +314,18 @@ class CardPassoTeste(QFrame):
             except Exception:
                 self.passo.value = val_raw
 
-        # Trata timeout vs pulse_time        
-        tempo = float(self.txt_tempo.text().replace(",", ".")) if self.txt_tempo.text() else 0.5        
+        # Trata timeout vs pulse_time, colocando o valor padrão caso algo dê errado   
+        tempo = float(self.txt_tempo.text().replace(",", ".")) if self.txt_tempo.text() else None        
         if self.passo.action == Action.PRESS_PUSH_BUTTON:
-            self.passo.pulse_time = tempo
+            if tempo is None:
+                tempo = 0.3
+            self.passo.pulse_time = tempo            
         else:
+            if tempo is None:
+                tempo = 0.5
             self.passo.timeout = tempo            
 
+        # Trata o valor de step_to_retry
         retry_s = self.txt_retry_step.text().strip()
         self.passo.step_to_retry = int(retry_s) if retry_s else None
 
@@ -431,6 +438,7 @@ class CardPassoTeste(QFrame):
                 self.txt_valor.setToolTip(self.tooltip_padrao_txt_valor_passo)
 
     def __configura_acao_por_tipo(self):
+        """Desabilita as ações que não são suportadas pelo tipo da tag escolhida"""
         tag = self.combo_tag.currentText()
         modelo = self.combo_acao.model()
 
