@@ -7,11 +7,12 @@ Embora este software tenha sido desenvolvido e testado no ambiente `Codesys`, qu
 ***INFO:** também foram realizados testes utilizando o CLP da família M221 (M221CE40T) da `Schneider Eletric` utilizando comunicação Modbus TCP, mas os valores e as operações Modbus devem ser ajustados de acordo.*
 
 Mande um [e-mail](mailto:andrew.mielczarki@senairs.org.br) caso queira contribuir ou dar sugestões.  
+> [!NOTE]
 > *Andrew Mielczarski: <andrew.mielczarski@senairs.org.br>*
 
 
-
-> ### Importante!
+> [!IMPORTANT]
+> **Cuidado com os valores!** <br>
 > Como os valores que o *Factory I/O* utiliza para os protocolos `OPC UA` e `Modbus TCP` são diferentes, os valores de comparação dentro dos passos devem ser ajustados de acordo.
 
 ## ✨ Principais Funcionalidades
@@ -32,10 +33,13 @@ Mande um [e-mail](mailto:andrew.mielczarki@senairs.org.br) caso queira contribui
   * `*_ui.py`: Construtores visuais (Views).
   * `*_rules.py`: Motor de regras de negócio estáticas (Business Logic/Fallbacks).
   * `*.py`: Orquestradores (Controllers) que gerenciam estado e I/O.
+ 
+> [!NOTE]
+> Nem todos os elementos da GUI estão neste formato, porém caso queira contribuir com o desenvolvimento, recomendamos o usa desta estrutura.
 
 ## 📁 Estrutura de Diretórios
 
-O projeto segue um padrão modular organizado:
+O projeto segue este padrão de organização:
 
 ```text
 CORRETOR_AUTOMATICO_CLP/
@@ -61,14 +65,14 @@ Pré-requisitos
 ### Passos de Instalação
   1. Clone o repositório:
 
-```powershell
+```bash
   git clone https://github.com/acmielczarski/corretor_automatico_clp.git
   cd corretor_automatico_clp
 ```
 
   2. Crie e ative um ambiente virtual (Recomendado):
 
-```powershell
+```bash
   python -m venv .venv
   # No Windows:
   .venv\Scripts\activate
@@ -77,13 +81,13 @@ Pré-requisitos
 ```
   3. Instale as dependências:
 
-```powershell
+```bash
   python -m uv sync --no-dev
  ```
 
   4. Execute a aplicação:
 
-```powershell
+```bash
   python main.py
 ```
 ## 🧠 Como Funciona o Fluxo de Teste
