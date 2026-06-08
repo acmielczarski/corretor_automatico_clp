@@ -6,7 +6,7 @@ venv/
 .ruff_cache/
 .vscode/
 /logs
-notes.txt
+notes.*
 
 # Compilação e distribuição (PyInstaller)
 build/

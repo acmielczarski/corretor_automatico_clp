@@ -1,18 +1,18 @@
 # 🏭 Avaliador Automático de CLP
 
-Uma ferramenta de automação e interface gráfica (GUI) desenvolvida em Python para avaliar, testar e validar a lógica de Controladores Lógicos Programáveis (CLPs). Projetado com foco em ambientes educacionais e de laboratório, o software permite a criação de roteiros de testes dinâmicos sem necessidade de programação por parte do usuário final.  
-Este software foi desenvolvida utilizando `Codesys` comunicando com o software de simulação `Factory I/O`, visando a correção automática de tarefas de estudantes do Curso Técnico em Automação Industrial. Simulações no `Factory I/O` que utilizam um escopo de funcionamento bem estruturada em passos, podem ser facilmente avaliadas automaticamente com este código.  
+Uma ferramenta de automação e interface gráfica (GUI) desenvolvida em Python para avaliar, testar e validar a lógica de Controladores Lógicos Programáveis (CLPs). Projetado com foco em ambientes educacionais e de laboratório, o software permite a criação de roteiros de testes dinâmicos sem necessidade de programação por parte do usuário final.
+Este software foi desenvolvida utilizando `Codesys` comunicando com o software de simulação `Factory I/O`, visando a correção automática de tarefas de estudantes do Curso Técnico em Automação Industrial. Simulações no `Factory I/O` que utilizam um escopo de funcionamento bem estruturada em passos, podem ser facilmente avaliadas automaticamente com este código.
 Embora este software tenha sido desenvolvido e testado no ambiente `Codesys`, qualquer CLP que possua comunicação OPC UA ou Modbus TCP ajustando os valores de configuração dos passos e mapeamento de endereços.
 
 ***INFO:** também foram realizados testes utilizando o CLP da família M221 (M221CE40T) da `Schneider Eletric` utilizando comunicação Modbus TCP, mas os valores e as operações Modbus devem ser ajustados de acordo.*
 
-Mande um [e-mail](mailto:andrew.mielczarki@senairs.org.br) caso queira contribuir ou dar sugestões.  
-> [!NOTE]
-> *Andrew Mielczarski:*<br><andrew.mielczarski@senairs.org.br>
+Mande um [e-mail](mailto:andrew.mielczarki@senairs.org.br) caso queira contribuir ou dar sugestões.
 
+> [!NOTE]
+> *Andrew Mielczarski:*`<br>`<andrew.mielczarski@senairs.org.br>
 
 > [!IMPORTANT]
-> **Cuidado com os valores!** <br>
+> **Cuidado com os valores!** `<br>`
 > Como os valores que o *Factory I/O* utiliza para os protocolos `OPC UA` e `Modbus TCP` são diferentes, os valores de comparação dentro dos passos devem ser ajustados de acordo.
 
 ## ✨ Principais Funcionalidades
@@ -29,12 +29,13 @@ Mande um [e-mail](mailto:andrew.mielczarki@senairs.org.br) caso queira contribui
 * **Linguagem Base:** Python 3
 * **Interface Gráfica:** PySide6 (Qt for Python)
 * **Assincronicidade:** `asyncio` e `qasync`
+* **Comunicação com o CLP:** `pymodbus` para o protocolo Modbus TCP e `asyncua` para OPC UA.
 * **Arquitetura UI:** Padrão MVC e Separação de Responsabilidades (SoC). Os componentes visuais complexos (como o `CardPassoTeste`) são divididos em:
   * `*_ui.py`: Construtores visuais (Views).
   * `*_rules.py`: Motor de regras de negócio estáticas (Business Logic/Fallbacks).
   * `*.py`: Orquestradores (Controllers) que gerenciam estado e I/O.
- 
-> [!NOTE]
+
+> [!WARNING]
 > Nem todos os elementos da GUI estão neste formato, porém caso queira contribuir com o desenvolvimento, recomendamos o usa desta estrutura.
 
 ## 📁 Estrutura de Diretórios
@@ -49,6 +50,7 @@ CORRETOR_AUTOMATICO_CLP/
 │   ├── gui/                 # Interface gráfica e componentes (PySide6)
 │   │   ├── components/      # Tabs, Cards isolados e Widgets customizados
 │   │   ├── custom_widgets/  # Componentes Qt sobrescritos (ex: NoScrollComboBox)
+│   │   ├── styles/  	     # Classes com os estilos CSS para os elementos Qt
 │   │   ├── main_window.py   # Janela e orquestrador principal
 │   │   └── dialog_config.py # Janela de configuração de teste
 │   └── test/                # Classes de domínio (TestEngine, TestScript, TestStep, Actions)
@@ -58,19 +60,22 @@ CORRETOR_AUTOMATICO_CLP/
 ```
 
 ## 🚀 Instalação e Uso Local
+
 Pré-requisitos
-  * Python 3.12 ou superior instalado na máquina.
-  * Gerenciador de pacotes `pip`.
+
+* Python 3.12 ou superior instalado na máquina.
+* Gerenciador de pacotes `pip`.
 
 ### Passos de Instalação
-  1. Clone o repositório:
+
+1. Clone o repositório:
 
 ```bash
   git clone https://github.com/acmielczarski/corretor_automatico_clp.git
   cd corretor_automatico_clp
 ```
 
-  2. Crie e ative um ambiente virtual (Recomendado):
+2. Crie e ative um ambiente virtual (Recomendado):
 
 ```bash
   python -m venv .venv
@@ -79,27 +84,28 @@ Pré-requisitos
   # No Linux/Mac:
   source .venv/bin/activate
 ```
-  3. Instale as dependências:
+
+3. Instale as dependências:
 
 ```bash
   python -m uv sync --no-dev
- ```
+```
 
-  4. Execute a aplicação:
+4. Execute a aplicação:
 
 ```bash
   python main.py
 ```
+
 ## 🧠 Como Funciona o Fluxo de Teste
+
 * **Conexão:** Na tela principal, o usuário define o IP e a porta (ex: 4840 para OPC ou 502 para Modbus) e escolhe o protocolo.
-
 * **Configuração OPC/Modbus:** Através do botão "Configurar Roteiro", o usuário cadastra as Tags do CLP na aba correspondente, definindo seus tipos e sinônimos lógicos.
-
 * **Criação do Roteiro:** Na aba de "Passos de Teste", o usuário adiciona os cartões de ação. O software possui Proteção UX (Fallbacks) que impede a seleção de comandos incompatíveis com o tipo da variável (ex: aplicar COMPARISON em variável booleana).
-
 * **Execução e Avaliação:** O JSON do roteiro é injetado no TestEngine, que se comunica com o equipamento físico/simulado e retorna o diagnóstico (Pass/Fail) no painel de Logs.
 
 ## 🎛️ Ações disponiveis no programa
+
 * **WRITE**: escreve um valor em uma variável;
 * **READ_EQUAL**: lê uma variável `booleana` e compara com o valor solicitado;
 * **COMPARISON**: lê uma variável numérica (como `float`, `int`) e avalia se está de acordo com a expressão solicitada;
@@ -109,4 +115,5 @@ Pré-requisitos
 * **SLEEP**: aguarda um tempo dentro do teste.
 
 ## 📄 Licença
+
 Este projeto é para uso educacional/privado, sob licença GNU General Public License v3.0.

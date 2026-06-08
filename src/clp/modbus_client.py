@@ -59,15 +59,18 @@ class ModbusClpClient(CLPClient):
         """
         return self.client.connected
 
-    async def escanear_variaveis_disponiveis(self, mapa_modbus : dict = None):
+    async def escanear_variaveis_disponiveis(self, mapa_modbus : dict = None, verbose : bool = False):
         """
         Armazena os nomes, tipos e valores das variáveis Modbus contidas em `mapa_modbus`
 
         :param mapa_modbus: Objeto ``dict`` contendo o mapeamento e o tipo das variáveis no servidor Modbus
-        :type mapa_modbus: dict[str, dict[str, Any]]
+        :type mapa_modbus: dict[str, dict[str, Any]] = None
+        :param verbose: Imprime informações no terminal.
+        :type verbose: bool = False
         """
         self.tags = mapa_modbus if mapa_modbus is not None else {}
-        print(f"[ModbusCLient] Mapa de IOs carregado. {len(self.tags)} variáveis configuradas.")
+        if verbose:
+            print(f"[ModbusCLient] Mapa de IOs carregado. {len(self.tags)} variáveis configuradas.")
 
     async def read_node(self, node_obj : dict) -> bool | int:
         """
@@ -75,9 +78,9 @@ class ModbusClpClient(CLPClient):
 
         :param node_obj: ``dict`` contendo tipo e endereço para leitura.
         :type node_obj: dict
-
         :returns: valor lido no endereço
         :rtype: bool | int
+        :raises Exception: Caso ocorra algum erro na leitura do endereço.
         """
         tipo = node_obj['type']
         addr = node_obj['addr']

@@ -4,8 +4,8 @@ from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout,
                                QHBoxLayout, QLabel, QComboBox, QLineEdit,
                                QPushButton, QTextEdit, QFrame, QDialog, 
                                QFileDialog, QMessageBox)
-from PySide6.QtCore import Qt, QDateTime
-from PySide6.QtGui import QFont
+from PySide6.QtCore import Qt, QDateTime, QRegularExpression
+from PySide6.QtGui import QFont, QIntValidator, QRegularExpressionValidator
 from qasync import asyncSlot
 
 # Import da janela Popup
@@ -14,6 +14,8 @@ from .dialog_config import JanelaConfigurarTeste
 # Importações dos módulos de comunicação e teste
 from src.clp import Protocol, OpcClpClient, ModbusClpClient, ModbusType
 from src.test import TestEngine, TestScript
+
+from src.gui.styles import MainWindowStyles
 
 class AvaliadorCLPGUI(QMainWindow):
     def __init__(self):
@@ -96,18 +98,30 @@ class AvaliadorCLPGUI(QMainWindow):
         layout_conexao.addWidget(QLabel("Endereço/IP:"))
         self.txt_url = QLineEdit("127.0.0.1")
         self.txt_url.setFixedWidth(110)
+        regex_ip = QRegularExpression(r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
+        validador_ip = QRegularExpressionValidator(regex_ip)
+        self.txt_url.setValidator(validador_ip)
         layout_conexao.addWidget(self.txt_url)
 
         layout_conexao.addStretch()
 
         layout_conexao.addWidget(QLabel("Porta:"))
         self.txt_porta = QLineEdit("4840")
+        self.txt_porta.setValidator(QIntValidator())
         self.txt_porta.setFixedWidth(60)
         layout_conexao.addWidget(self.txt_porta)
 
         layout_conexao.addStretch()
 
-        #TODO adicionar um campo para escolher o nome da GVL para encontrar as tags OPC
+        #TODO ajustar o método para o node do factory io ser utilizado no teste em OPC UA.
+        # caso seja deixado vazio, implementar que procure em todos os nodes (meio perigoso)
+        layout_conexao.addWidget(QLabel("Node Factory I/O:"))
+        self.txt_node_fio = QLineEdit("FactoryIO")
+        self.txt_node_fio.setFixedWidth(80)
+        self.txt_node_fio.setToolTip("Nome da GVL que contém as tags de comunicação com o Facotory I/O.\nUsado somente para OPC UA.")
+        layout_conexao.addWidget(self.txt_node_fio)
+
+        layout_conexao.addStretch()        
 
         self.layout_principal.addWidget(frame_conexao)
 
@@ -135,12 +149,12 @@ class AvaliadorCLPGUI(QMainWindow):
         self.layout_principal.addWidget(frame_arquivos)
         
         self.lbl_status_arquivo = QLabel(self.status_inicial)
-        self.lbl_status_arquivo.setStyleSheet("color: #27ae60; font-style: italic; padding-left: 5px;")
+        self.lbl_status_arquivo.setStyleSheet(MainWindowStyles.LABEL_STATUS_ARQUIVO_BASE)
         self.layout_principal.addWidget(self.lbl_status_arquivo)
 
         layout_cabecalho_log = QHBoxLayout()
         lbl_log = QLabel("Console de Saída (Logs):")
-        lbl_log.setStyleSheet("font-weight: bold; font-size: 14px;")
+        lbl_log.setStyleSheet(MainWindowStyles.LABEL_CABECALHO_LOG)
         layout_cabecalho_log.addWidget(lbl_log)
 
         layout_cabecalho_log.addStretch()
@@ -175,17 +189,19 @@ class AvaliadorCLPGUI(QMainWindow):
         self.txt_log.setReadOnly(True)
         fonte_log = QFont("Courier New", 11)
         self.txt_log.setFont(fonte_log)
-        self.txt_log.setStyleSheet("background-color: #1e1e1e; color: #d4d4d4;")
+        self.txt_log.setStyleSheet(MainWindowStyles.TXT_LOG)
         self.layout_principal.addWidget(self.txt_log)        
 
         self.btn_executar = QPushButton("INICIAR PROCESSO DE AVALIAÇÃO")
-        self.btn_executar.setFixedHeight(45)
-        self.btn_executar.setStyleSheet("font-weight: bold; font-size: 13px; background-color: #007acc; color: white;")
+        self.btn_executar.setFixedHeight(45)        
+        self.btn_executar.setStyleSheet(MainWindowStyles.BTN_INICIAR_TESTE)
         self.btn_executar.clicked.connect(self.processar_teste_gui)
         self.layout_principal.addWidget(self.btn_executar)
 
     def _atualizar_porta_padrao(self, escolha):
-        self.txt_porta.setText("4840" if "OPC UA" in escolha else "502")
+        self.txt_porta.setText("4840" if "OPC UA" in escolha else "502")        
+        self.txt_node_fio.setEnabled(False if "Modbus TCP" in escolha else True)
+        
 
     def log(self, mensagem: str):
         self.txt_log.append(mensagem)
@@ -196,7 +212,7 @@ class AvaliadorCLPGUI(QMainWindow):
         if janela.exec() == QDialog.Accepted:
             self.roteiro_atual = janela.roteiro
             self.lbl_status_arquivo.setText(f"Roteiro atualizado ({len(self.roteiro_atual.passos)} passos).")
-            self.lbl_status_arquivo.setStyleSheet("color: #3498db; font-style: italic; padding-left: 5px;")
+            self.lbl_status_arquivo.setStyleSheet(MainWindowStyles.LABEL_STATUS_ARQUIVO_OK)
 
     def salvar_teste_json(self):
         caminho, _ = QFileDialog.getSaveFileName(self, "Salvar Roteiro e Cenas", "", "Arquivos JSON (*.json)")
@@ -206,7 +222,7 @@ class AvaliadorCLPGUI(QMainWindow):
                     f.write(self.roteiro_atual.to_json())
                 QMessageBox.information(self, "Sucesso", "Roteiro e Mapeamentos salvos com sucesso!")
                 self.lbl_status_arquivo.setText(f"Salvo em: {os.path.basename(caminho)}")
-                self.lbl_status_arquivo.setStyleSheet("color: #3498db; font-style: italic; padding-left: 5px;")
+                self.lbl_status_arquivo.setStyleSheet(MainWindowStyles.LABEL_STATUS_ARQUIVO_OK)
             except Exception as e:
                 QMessageBox.critical(self, "Erro", f"Falha ao salvar:\n{e}")
 
@@ -246,8 +262,8 @@ class AvaliadorCLPGUI(QMainWindow):
     @asyncSlot()
     async def processar_teste_gui(self):
         protocolo = self.combo_protocolo.currentText()
-        ip = self.txt_url.text()
-        porta = int(self.txt_porta.text())
+        ip = self.txt_url.text().strip()
+        porta = int(self.txt_porta.text().strip())
         
         self.txt_log.clear()
         self.log(f"🔄 Inicializando ferramenta via {protocolo}...")
@@ -266,7 +282,8 @@ class AvaliadorCLPGUI(QMainWindow):
             self.log(f"✅ Conexão estabelecida com sucesso no endereço {self.clp.url}:{self.clp.port}.")
             
             if "OPC UA" in protocolo:
-                await self.clp.escanear_variaveis_disponiveis(gvl_name="FactoryIO")
+                node = self.txt_node_fio.text().strip()
+                await self.clp.escanear_variaveis_disponiveis(gvl_name=node if node else "FactoryIO")
             else:
                 # Conversão dinâmica das strings (salvas no JSON) para os Enums nativos do seu ModbusClpClient
                 mapa_modbus_parsed = {}

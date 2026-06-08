@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QScrollArea,
 from PySide6.QtCore import Qt, Slot, QTimer
 from src.test import TestStep, Action, TestScript
 from .card_passo import CardPassoTeste
+from src.gui.styles import TabPassosStyles
 
 #--------------------------------------------------------------------------------#
 #                        ABA DE PASSOS (ORQUESTRADOR)                            #
@@ -12,6 +13,7 @@ class TabPassos(QWidget):
     def __init__(self, roteiro : TestScript, parent=None):
         super().__init__(parent)
         self.roteiro = roteiro
+        self.index_passo_novo = None
         self._setup_ui()
         self.cards = {}
 
@@ -23,7 +25,7 @@ class TabPassos(QWidget):
         layout_botao = QHBoxLayout(frame_botao)
         self.btn_add_novo = QPushButton("➕ NOVO PASSO")
         self.btn_add_novo.setFixedHeight(35)
-        self.btn_add_novo.setStyleSheet("background-color: #27ae60; font-weight: bold; color: white;")
+        self.btn_add_novo.setStyleSheet(TabPassosStyles.BTN_NOVO)
         self.btn_add_novo.clicked.connect(self._adicionar_passo_vazio)
         layout_botao.addStretch()
         layout_botao.addWidget(self.btn_add_novo)
@@ -32,7 +34,7 @@ class TabPassos(QWidget):
         # Scroll Area
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setStyleSheet("QScrollArea { border: none; background-color: transparent; }")
+        self.scroll_area.setStyleSheet(TabPassosStyles.SCROLL_AREA)
         
         self.container_passos = QWidget()
         self.layout_passos = QVBoxLayout(self.container_passos)
@@ -70,6 +72,8 @@ class TabPassos(QWidget):
 
             self.cards[i] = card
 
+        if self.index_passo_novo is not None:
+            self._configura_acoes_card_em_edicao(self.index_passo_novo, True)
         # Limpa o indicador da memória após finalizar o redesenho, 
         # garantindo que ações futuras (como reordenações) não reativem a edição sozinhos
         self.index_passo_novo = None
@@ -118,14 +122,18 @@ class TabPassos(QWidget):
 
     @Slot(int, bool)
     def _configura_acoes_card_em_edicao(self, idx_card : int, em_edicao : bool):
-        self.btn_add_novo.setEnabled(not em_edicao)
+        self.btn_add_novo.setEnabled(not em_edicao)        
 
         for i, card in self.cards.items():
             if em_edicao:
                 if i != idx_card:
                     card.btn_editar.setEnabled(False)
+                    card.btn_up.setEnabled(False)
+                    card.btn_down.setEnabled(False)
             else:
                 card.btn_editar.setEnabled(True)
+                card.btn_up.setEnabled(True)
+                card.btn_down.setEnabled(True)
 
     def limpar_aba(self):
         if QMessageBox.question(self, "Limpar", "Remover TODOS os passos?") == QMessageBox.StandardButton.Yes:

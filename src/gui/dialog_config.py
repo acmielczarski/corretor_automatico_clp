@@ -3,6 +3,7 @@ from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QPushButton,
                                QDialog, QMessageBox, QTabWidget, QFileDialog)
 from PySide6.QtCore import Slot
 from src.test import TestScript
+from src.gui.styles import DialogConfigStyles
 
 # Importando as tabs
 from src.gui.components import TabOPC, TabModbus, TabPassos
@@ -17,12 +18,15 @@ class JanelaConfigurarTeste(QDialog):
         
         self.roteiro = roteiro_atual if roteiro_atual is not None else TestScript([])
         
+        self._setup_ui()
+
+    def _setup_ui(self):
+        """Constói a interface gráfica e conecta os sinais ao final da construção"""
         layout_principal = QVBoxLayout(self)
         
         # --- INSTANCIANDO AS ABAS ---
         self.tabs = QTabWidget()
-        layout_principal.addWidget(self.tabs)  
-        self.tabs.currentChanged.connect(self._notificar_abas)     
+        layout_principal.addWidget(self.tabs)         
         
         # Injeta a referência do 'roteiro' em cada componente isolado
         self.tab_opc = TabOPC(self.roteiro, self)
@@ -31,33 +35,39 @@ class JanelaConfigurarTeste(QDialog):
 
         self.tabs.addTab(self.tab_opc, "🔗 Dicionário OPC")
         self.tabs.addTab(self.tab_modbus, "⚙️ Mapeamento Modbus")
-        self.tabs.addTab(self.tab_passos, "📍 Passos do Roteiro")
-
-        self.tab_modbus.validacao_modbus.connect(self._bloqueia_salvamento_por_erro)          
+        self.tabs.addTab(self.tab_passos, "📍 Passos do Roteiro")                 
         
         # --- BOTÕES DE AÇÃO GLOBAIS ---
         layout_botoes = QHBoxLayout()
-
-        self.btn_novo = QPushButton("Novo")
-        self.btn_novo.clicked.connect(self._novo_roteiro)
+        self.btn_novo = QPushButton("Novo")        
         layout_botoes.addWidget(self.btn_novo)
 
-        self.btn_limpar = QPushButton("Limpar Aba Atual")
-        self.btn_limpar.clicked.connect(self._limpar_aba_atual)
+        self.btn_limpar = QPushButton("Limpar Aba Atual")        
         layout_botoes.addWidget(self.btn_limpar)
 
-        self.btn_carregar = QPushButton("Carregar")
-        self.btn_carregar.clicked.connect(self._carregar_roteiro_json)
+        self.btn_carregar = QPushButton("Carregar")        
         layout_botoes.addWidget(self.btn_carregar)       
         
         layout_botoes.addStretch()
 
         self.btn_concluir = QPushButton("Salvar e Sair")
-        self.btn_concluir.setStyleSheet("background-color: #27ae60; color: white; font-weight: bold;")
-        self.btn_concluir.clicked.connect(self.accept_custom)
+        self.btn_concluir.setStyleSheet(DialogConfigStyles.BTN_SALVAR)        
         layout_botoes.addWidget(self.btn_concluir)
         
         layout_principal.addLayout(layout_botoes)
+
+        self._conectar_sinais()
+
+    def _conectar_sinais(self):
+        # Conexão dos Widgets da tela
+        self.tabs.currentChanged.connect(self._notificar_abas)
+        self.btn_novo.clicked.connect(self._novo_roteiro)
+        self.btn_limpar.clicked.connect(self._limpar_aba_atual)
+        self.btn_carregar.clicked.connect(self._carregar_roteiro_json)
+        self.btn_concluir.clicked.connect(self.accept_custom)
+
+        # Conexão dos Signals do Widgets filhos
+        self.tab_modbus.validacao_modbus.connect(self._bloqueia_salvamento_por_erro) 
 
     def _notificar_abas(self):
         """Ao mudar de aba, avisa os componentes para puxarem as tags novas do OPC"""
@@ -65,9 +75,13 @@ class JanelaConfigurarTeste(QDialog):
         if aba_atual == 1:
             self.tab_modbus.roteiro = self.roteiro
             self.tab_modbus.atualizar_tabela()
+            self.btn_limpar.setEnabled(False)
         elif aba_atual == 2:
             self.tab_passos.roteiro = self.roteiro
             self.tab_passos.atualizar_tabela()
+            self.btn_limpar.setEnabled(True)
+        else:
+            self.btn_limpar.setEnabled(False)
 
     def _limpar_aba_atual(self):
         """Manda limar a aba atual de acordo com a aba aberta"""

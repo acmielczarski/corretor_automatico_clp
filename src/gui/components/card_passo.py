@@ -4,6 +4,7 @@ from PySide6.QtCore import Signal, QLocale
 from PySide6.QtGui import QIntValidator, QDoubleValidator
 from src.test import TestStep, Action
 from src.gui.custom_widgets import NoScrollComboBox
+from src.gui.styles import CardPassoStyles
 # from src.gui.components.scripts import CardUIBuilder, CardRulesEngine
 
 #--------------------------------------------------------------------------------#
@@ -29,20 +30,13 @@ class CardPassoTeste(QFrame):
         self.em_edicao = False # Controle do estado do card
         
         self.setFrameShape(QFrame.Shape.StyledPanel)
-        self.setStyleSheet("""
-            CardPassoTeste { 
-                background-color: #1e1e1e; 
-                border: 1px solid #3d3d3d; 
-                border-radius: 10px; 
-            }
-            QLabel { color: #f5f5f5; font-weight: bold; }
-            QLineEdit, QComboBox { background-color: #2d2d2d; color: white; border: 1px solid #3d3d3d; padding: 4px; border-radius: 4px; }
-        """)
+        self.setStyleSheet(CardPassoStyles.CARD_BASE)
         
         self.main_layout = QVBoxLayout(self)
         self._setup_ui()
         # CardUIBuilder.build(self)
         self._carregar_dados_do_objeto()
+
         if iniciar_em_edicao:
             self._entrar_modo_edicao()
         else:
@@ -67,15 +61,15 @@ class CardPassoTeste(QFrame):
         
         #Botões do modo EDIÇÃO
         self.btn_salvar = QPushButton("💾 Salvar")
-        self.btn_salvar.setStyleSheet("background-color: #27ae60; color: white; font-weight: bold;")
+        self.btn_salvar.setStyleSheet(CardPassoStyles.BTN_SALVAR)
         self.btn_salvar.clicked.connect(self._salvar_edicao)
         
         self.btn_cancelar = QPushButton("🚫 Cancelar")
-        self.btn_cancelar.setStyleSheet("background-color: #7f8c8d; color: white;")
+        self.btn_cancelar.setStyleSheet(CardPassoStyles.BTN_CANCELAR)
         self.btn_cancelar.clicked.connect(self._cancelar_edicao)
         
         self.btn_del = QPushButton("🗑️ Excluir")
-        self.btn_del.setStyleSheet("background-color: #c0392b; color: white;")
+        self.btn_del.setStyleSheet(CardPassoStyles.BTN_EXCLUIR)
         self.btn_del.clicked.connect(lambda: self.pedir_exclusao.emit(self.index))
 
         #Botões do modo LEITURA
@@ -90,7 +84,7 @@ class CardPassoTeste(QFrame):
         self.btn_down.clicked.connect(lambda: self.pedir_descida.emit(self.index))
         
         self.btn_editar = QPushButton("✏️ Editar")
-        self.btn_editar.setStyleSheet("background-color: #2980b9; color: white;")
+        self.btn_editar.setStyleSheet(CardPassoStyles.BTN_EDITAR)
         self.btn_editar.clicked.connect(self._entrar_modo_edicao)
         
         layout_header.addWidget(self.btn_salvar)
@@ -225,7 +219,7 @@ class CardPassoTeste(QFrame):
         self.btn_up.hide()
         self.btn_down.hide()
         self.btn_editar.hide()
-
+        
         self.card_em_edicao.emit(self.index, True)
 
         # Destaque visual (borda amarela ou azul) para focar a atenção
@@ -252,11 +246,16 @@ class CardPassoTeste(QFrame):
         if missing_field is not None:
             message = f"O campo {missing_field} deve ser preenchido para a ação {actual_action.name}"
             if type == 0:
-                QMessageBox.warning(self.parent(), "Aviso", message)                
-            elif type == 1:
-                resposta = QMessageBox.question(self.parent(), "Aviso",
-                                            f"{message}\nDeseja corrigir o passo? Caso descartar seja selecionado, o passo será excluído",
-                                            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Discard)                
+                QMessageBox.warning(self.parent(), "Aviso", message)               
+            elif type == 1:                
+                resposta_box = QMessageBox(self.parent())
+                resposta_box.setWindowTitle("Aviso")
+                resposta_box.setText(f"{message}\nDeseja corrigir o passo?")
+                resposta_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Discard)
+                resposta_box.button(QMessageBox.StandardButton.Yes).setText("Corrigir")
+                resposta_box.button(QMessageBox.StandardButton.Discard).setText("Excluir")
+                resposta = resposta_box.exec()
+
                 if resposta == QMessageBox.StandardButton.Discard:
                     self.pedir_exclusao.emit(self.index)
             else:
