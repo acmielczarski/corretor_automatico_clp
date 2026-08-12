@@ -104,7 +104,7 @@ class ModbusClpClient(CLPClient):
         except Exception as e:
             print(f"[Modbus Client] Erro ao ler do servidor Modbus. {e}")
 
-    async def write_node(self, node_obj : dict, valor : bool | int):
+    async def write_node(self, node_obj : dict, valor : bool | int, tipo_dado : str = None):
         """
         Escreve ``valor`` em ``node_obj``.
 
